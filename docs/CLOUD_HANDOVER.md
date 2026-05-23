@@ -134,9 +134,15 @@ pip install --upgrade pip wheel
 
 # --- 4.5 Project deps ---
 pip install -e ".[nq]"
-# This pulls: anthropic, openai, pandas, numpy, scikit-learn, pyyaml,
-# sortedcontainers, plus the [nq] extras: nautilus_trader[databento],
-# vectorbt, mlflow, databento.
+# Pulls: anthropic, openai, pandas, numpy, scikit-learn, pyyaml,
+#        sortedcontainers, vectorbt, mlflow, databento.
+#
+# nautilus_trader (the backtest workstream) is a separate extra because
+# the latest release line requires Python >= 3.12 while the standard
+# RunPod PyTorch image is on Python 3.11. Add nautilus only when you're
+# ready to backtest:
+#
+#   pip install -e ".[backtest]"   # adds nautilus_trader >= 1.220 on top of [nq]
 
 # --- 4.6 Sanity check imports ---
 python -c "

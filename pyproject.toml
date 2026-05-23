@@ -22,11 +22,20 @@ dependencies = [
 midas = "midas.factory:_cli"
 
 [project.optional-dependencies]
+# Discovery + feature extraction. Works on Python >= 3.11.
 nq = [
-  "nautilus_trader[databento]>=1.227",
   "vectorbt>=1.0",
   "mlflow>=3.12",
   "databento>=0.78",
+]
+
+# Backtest workstream. Pulls in nautilus_trader.
+# Note: nautilus_trader >= 1.227 requires Python >= 3.12.
+# On Python 3.11 environments (e.g. RunPod PyTorch py3.11 images), pip will
+# resolve down to the latest 3.11-compatible release (currently 1.221).
+backtest = [
+  "midas-alpha[nq]",
+  "nautilus_trader[databento]>=1.220",
 ]
 
 [tool.setuptools]
