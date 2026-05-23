@@ -158,6 +158,21 @@ to `scp` directly. The raw MBO `.dbn.zst` files (10 GB) are **not** needed
 for discovery — only re-extraction. Leave them on the local machine; re-pull
 fresh to the cloud only if you need to re-extract.
 
+### Quick path: the bundled PowerShell script
+
+```powershell
+# From the repo root on your local Windows machine:
+.\scripts\transfer_to_cloud.ps1
+# default args: -RemoteHost runpod-mnq -RemoteRoot /workspace/Midas
+# add  -SkipLearnings  if you want a fresh KB on the cloud side
+```
+
+The script verifies SSH, checks local files, creates the remote directory
+tree, scp's the `.env` (chmod 600) + parquets + prior learnings, and
+prints a verification listing from the remote.
+
+### Manual path (if you prefer line-by-line)
+
 On your local Windows machine (PowerShell):
 
 ```powershell
