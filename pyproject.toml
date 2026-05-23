@@ -15,10 +15,19 @@ dependencies = [
   "pandas>=1.5.0",
   "PyYAML>=6.0.0",
   "scikit-learn>=1.5.0",
+  "sortedcontainers>=2.4.0",
 ]
 
 [project.scripts]
 midas = "midas.factory:_cli"
 
+[project.optional-dependencies]
+nq = [
+  "nautilus_trader[databento]>=1.227",
+  "vectorbt>=1.0",
+  "mlflow>=3.12",
+  "databento>=0.78",
+]
+
 [tool.setuptools]
-packages = ["midas"]
+packages = ["midas", "midas.adapters"]

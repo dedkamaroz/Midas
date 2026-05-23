@@ -183,11 +183,19 @@ class AlphaEvaluator:
         v = feat.rank().corr(ret.rank())
         return float(v) if pd.notna(v) else 0.0
 
-    @staticmethod
-    def _ic_std(feat: pd.Series, ret: pd.Series, window: int = 20) -> float:
+    # When the 20-bar rolling correlation barely varies across the sample,
+    # ic_std collapses toward 0 and IR (ic/ic_std) explodes to garbage. Floor
+    # the std at something on the order of normal IC jitter so IR stays
+    # interpretable for the threshold checks downstream.
+    _IC_STD_FLOOR = 0.01
+
+    @classmethod
+    def _ic_std(cls, feat: pd.Series, ret: pd.Series, window: int = 20) -> float:
         rolling = feat.rolling(window).corr(ret)
         v = rolling.std()
-        return float(v) if pd.notna(v) else 1e-9
+        if pd.isna(v):
+            return cls._IC_STD_FLOOR
+        return max(float(v), cls._IC_STD_FLOOR)
 
     @staticmethod
     def _turnover(feat: pd.Series) -> float:

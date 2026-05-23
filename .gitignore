@@ -205,3 +205,16 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local IDE / agent state
+.claude/
+.serena/
+
+# Large or session-generated data (regenerate locally; not for source control)
+market_data/
+midas-kb/
+midas-kb-mnq/knowledge/learnings/
+midas-kb-mnq/knowledge/features/
+midas-kb-mnq/reports/
+demo_artifacts/midas-kb/.midas-demo
+demo_artifacts/midas-kb-online/.midas-demo

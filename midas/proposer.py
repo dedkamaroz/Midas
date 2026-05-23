@@ -38,6 +38,8 @@ _VALID_OPS = {
     "cs_rank", "cs_zscore", "cs_demean", "cs_neutralize",
     # conditional
     "if_else", "clip", "max", "min",
+    # comparison (return 0/1 series, composable with if_else / mul gating)
+    "gt", "lt", "gte", "lte", "eq", "neq",
     # technical
     "rsi", "macd", "bbands_pct", "atr", "obv",
 }
@@ -46,6 +48,11 @@ _VALID_OPS = {
 _VALID_COLUMNS = {
     "open", "high", "low", "close", "volume", "vwap", "trades",
     "bid_volume", "ask_volume", "open_interest", "funding_rate",
+    # MBO-derived microstructure features (see midas.adapters.mbo_features)
+    "mid_price", "microprice", "microprice_dev", "book_imb_l1",
+    "bid_size_l1", "ask_size_l1", "ofi", "signed_volume", "trade_intensity",
+    "vpin_bar", "queue_intensity_l1", "book_imb_l5",
+    "depth_bid_l5", "depth_ask_l5",
 }
 
 
@@ -122,8 +129,14 @@ class DSLValidator:
         if max_depth > 5:
             errors.append(f"Nesting depth {max_depth} exceeds limit of 5")
 
-        # 5. Negative lookbacks (quick heuristic)
-        neg_lookbacks = re.findall(r",\s*(-\d+)\s*\)", expr)
+        # 5. Negative lookbacks: only flag negative integers passed as the
+        #    final argument to a time-series operator (delay/delta/returns/
+        #    ts_*/ema). A plain `mul(x, -1)` is a sign-flip, not a lookback.
+        ts_ops = "delay|delta|returns|ts_mean|ts_std|ts_max|ts_min|ts_rank|ts_zscore|ema|ts_corr|ts_cov|rsi|atr|bbands_pct"
+        neg_lookbacks = re.findall(
+            rf"\b(?:{ts_ops})\([^()]*?,\s*(-\d+)\s*\)",
+            expr,
+        )
         if neg_lookbacks:
             errors.append(f"Negative lookbacks detected {neg_lookbacks} — potential look-ahead bias")
 
@@ -244,8 +257,10 @@ class ExpressionProposer:
     ) -> List[Candidate]:
         """Refine a failing expression based on multi-agent feedback."""
         template = self.kb.load_prompt("refine")
+        dsl_ref  = self.kb.load_skill("midas-dsl")
 
-        prompt = template.replace("{{expression}}",        expression)
+        prompt = template.replace("{{midas_dsl_skill}}",   dsl_ref)
+        prompt = prompt.replace("{{expression}}",          expression)
         prompt = prompt.replace("{{evaluation_result}}",   json.dumps(result.metrics.to_dict(), indent=2))
         prompt = prompt.replace("{{blocking_issues}}",     "\n".join(f"- {b}" for b in result.blocking_issues))
         prompt = prompt.replace("{{suggestions}}",         "\n".join(f"- {s}" for s in result.improvement_suggestions))
